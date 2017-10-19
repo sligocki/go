@@ -1,3 +1,5 @@
+#include <vector>
+
 #include "zero/game.h"
 
 namespace go_zero {
@@ -33,7 +35,7 @@ bool Game::TryPlay(const Move& move) {
     }
   }
 
-  if (!OnBoard(move)) {
+  if (!IsOnBoard(move)) {
     // Outside of the board.
     return false;
   }
@@ -46,11 +48,11 @@ bool Game::TryPlay(const Move& move) {
   board_.SetPos(move.x, move.y, curr_player_);
 
   // See if this was a self-capture (we allow self-capture).
-  TryLift(move.x, move.y);
+  TryLift(move);
 
-  for (Move neighbor : Neighbors(move)) {
+  for (Move neighbor : GetNeighbors(move)) {
     // See if any neighboring groups were captured.
-    TryLift(neighbor.x, neighbor.y);
+    TryLift(neighbor);
   }
 
   // TODO: Check for KO?
@@ -59,24 +61,25 @@ bool Game::TryPlay(const Move& move) {
   return true;
 }
 
-bool Game::OnBoard(const Move& pos) {
-  if (move.x < 0 || move.x >= board_.width() ||
-      move.y < 0 || move.y >= board_.height()) {
+bool Game::IsOnBoard(const Move& pos) const {
+  if (pos.x < 0 || pos.x >= board_.width() ||
+      pos.y < 0 || pos.y >= board_.height()) {
     return false;
   } else {
     return true;
   }
 }
 
-std::vector<Move> Game::GetNeighbors(const Move& pos) {
+std::vector<Move> Game::GetNeighbors(const Move& pos) const {
   // All possible neighbors.
-  std::vector<Move> poss_neighs { { kPlayStone, pos.x - 1, pos.y },
-                                  { kPlayStone, pos.x + 1, pos.y },
-                                  { kPlayStone, pos.x, pos.y - 1 },
-                                  { kPlayStone, pos.x, pos.y + 1 } };
+  std::vector<Move> poss_neighs;
+  poss_neighs.emplace_back(Move::kPlayStone, pos.x - 1, pos.y);
+  poss_neighs.emplace_back(Move::kPlayStone, pos.x + 1, pos.y);
+  poss_neighs.emplace_back(Move::kPlayStone, pos.x, pos.y - 1);
+  poss_neighs.emplace_back(Move::kPlayStone, pos.x, pos.y + 1);
   std::vector<Move> neighbors;
   for (const Move& poss_neigh : poss_neighs) {
-    if (OnBoard(poss_neigh)) {
+    if (IsOnBoard(poss_neigh)) {
       neighbors.push_back(poss_neigh);
     }
   }
@@ -84,6 +87,10 @@ std::vector<Move> Game::GetNeighbors(const Move& pos) {
 }
 
 void Game::TryLift(const Move& pos) {
+  // TODO
+}
+
+void Game::ScoreBoard() {
   // TODO
 }
 
