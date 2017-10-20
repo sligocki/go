@@ -36,18 +36,26 @@ class Board {
       board_(width, std::vector<Color>(height, Color::kNone)) {
   }
 
-  Color GetPos(Pos p) const {
+  Color GetPos(const Pos& p) const {
     return board_[p.x][p.y];
   }
 
-  void SetPos(Pos p, Color cont) {
-    board_[p.x][p.y] = cont;
+  void SetPos(const Pos& p, Color color) {
+    board_[p.x][p.y] = color;
   }
 
-  int width() const { return width_; }
-  int height() const { return height_; }
+  bool PlayStone(const Pos& pos, Color color);
+
+  // Return score on board (without komi) using Tromp-Taylor rules.
+  // > 0 means Black has more points. < 0 means White has more points.
+  int Score() const;
 
  private:
+  bool IsOnBoard(const Pos& pos) const;
+  std::vector<Pos> GetNeighbors(const Pos& pos) const;
+
+  void TryLift(const Pos& init_pos, Color init_color);
+
   const int width_ = 0;
   const int height_ = 0;
   std::vector<std::vector<Color>> board_;
@@ -85,13 +93,7 @@ class Game {
   void GetFeatures() const;
 
  private:
-  bool IsOnBoard(const Pos& pos) const;
-  std::vector<Pos> GetNeighbors(const Pos& pos) const;
-
   bool TryPlay(const Move& move);
-  bool PlayStone(const Pos& pos);
-  void TryLift(const Pos& pos);
-  void ScoreBoard();
 
   // White wins ties so -> komi = komi_ + 0.5
   const int komi_ = 0;
