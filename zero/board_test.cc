@@ -88,7 +88,7 @@ TEST(BoardTest, Capture) {
   EXPECT_EQ(1 - 1, board.Score());
 
   // Captures one stone in corner.
-  board.PlayStone(Pos(0, 1), Color::kWhite);
+  EXPECT_TRUE(board.PlayStone(Pos(0, 1), Color::kWhite));
   EXPECT_EQ(".O...\n"
             "O....\n"
             ".....\n"
@@ -105,13 +105,79 @@ TEST(BoardTest, Capture) {
   EXPECT_EQ(1 - 3, board.Score());
 
   // Captures one stone in center.
-  board.PlayStone(Pos(2, 1), Color::kWhite);
+  EXPECT_TRUE(board.PlayStone(Pos(2, 1), Color::kWhite));
   EXPECT_EQ(".....\n"
             "..O..\n"
             ".O.O.\n"
             "..O..\n"
             ".....\n", BoardToString(board));
   EXPECT_EQ(-25, board.Score());
+
+
+  EXPECT_TRUE(StringToBoard(".....\n"
+                            "...X.\n"
+                            ".XXOX\n"
+                            ".XOOX\n"
+                            "..OOX\n", &board));
+  EXPECT_EQ(7 - 5, board.Score());
+
+  // Captures a blob of stones on the edge.
+  EXPECT_TRUE(board.PlayStone(Pos(1, 4), Color::kBlack));
+  EXPECT_EQ(".....\n"
+            "...X.\n"
+            ".XX.X\n"
+            ".X..X\n"
+            ".X..X\n", BoardToString(board));
+  EXPECT_EQ(25, board.Score());
+
+  
+  EXPECT_TRUE(StringToBoard(".....\n"
+                            ".....\n"
+                            "...XX\n"
+                            "..XOO\n"
+                            "..XO.\n", &board));
+  EXPECT_EQ(21 - 4, board.Score());
+
+  // Captures stones by taking their only eye.
+  EXPECT_TRUE(board.PlayStone(Pos(4, 4), Color::kBlack));
+  EXPECT_EQ(".....\n"
+            ".....\n"
+            "...XX\n"
+            "..X..\n"
+            "..X.X\n", BoardToString(board));
+  EXPECT_EQ(25, board.Score());
+
+  
+  EXPECT_TRUE(StringToBoard(".....\n"
+                            "..X..\n"
+                            ".X.X.\n"
+                            "..X..\n"
+                            ".....\n", &board));
+
+  // Captures stones by taking their only eye.
+  EXPECT_TRUE(board.PlayStone(Pos(2, 2), Color::kWhite));
+  // White suicide. No change.
+  EXPECT_EQ(".....\n"
+            "..X..\n"
+            ".X.X.\n"
+            "..X..\n"
+            ".....\n", BoardToString(board));
+
+  
+  EXPECT_TRUE(StringToBoard("..O..\n"
+                            ".OXO.\n"
+                            ".X.XO\n"
+                            "..XO.\n"
+                            ".....\n", &board));
+
+  // Captures stones by taking their only eye.
+  EXPECT_TRUE(board.PlayStone(Pos(2, 2), Color::kWhite));
+  // No longer suicide.
+  EXPECT_EQ("..O..\n"
+            ".O.O.\n"
+            ".XO.O\n"
+            "..XO.\n"
+            ".....\n", BoardToString(board));
 }
 
 }  // namespace go_zero
