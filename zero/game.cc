@@ -66,17 +66,8 @@ T Pop(std::set<T, Cmp>* ts) {
   return ret;
 }
 
-struct PosComp {
-  bool operator() (const Pos& a, const Pos& b) const {
-    return std::pair<int, int>(a.x, a.y) < std::pair<int, int>(b.x, b.y);
-  }
-};
-
-typedef std::set<Pos, PosComp> PosSet;
-
-// Check to see if string of stones connected to pos should be removed from
-// the board and remove them if so.
-void Board::TryLift(const Pos& init_pos, Color init_color) {
+void Board::FindReachable(const Pos& init_pos, Color init_color, PosSet* string,
+                          std::set<Color>* colors_reachable) const {
   if (init_color != GetPos(init_pos)) {
     // Wrong color, nothing to do.
     return;
@@ -86,7 +77,6 @@ void Board::TryLift(const Pos& init_pos, Color init_color) {
   PosSet to_visit;
   to_visit.insert(init_pos);
   PosSet visited;
-  PosSet this_string;
   while (!to_visit.empty()) {
     Pos pos = Pop(&to_visit);
     if (visited.find(pos) != visited.end()) {
@@ -95,28 +85,88 @@ void Board::TryLift(const Pos& init_pos, Color init_color) {
     }
     visited.insert(pos);
     Color this_color = GetPos(pos);
-    if (this_color == Color::kNone) {
-      // There is at least one liberty.
-      return;
-    }
-
     if (this_color == init_color) {
-      this_string.insert(pos);
+      string->insert(pos);
       for (Pos neighbor : GetNeighbors(pos)) {
         to_visit.insert(neighbor);
       }
+    } else {
+      // TODO: Add early exists for reaching kNone or both kBlack and kWhite?
+      colors_reachable->insert(this_color);
     }
   }
+}
 
-  // If we reached this point, string has no liberties. Remove it.
-  for (Pos pos : this_string) {
-    SetPos(pos, Color::kNone);
+// Check to see if string of stones connected to pos should be removed from
+// the board and remove them if so.
+void Board::TryLift(const Pos& init_pos, Color init_color) {
+  PosSet string;
+  std::set<Color> colors_reachable;
+  FindReachable(init_pos, init_color, &string, &colors_reachable);
+  if (colors_reachable.find(Color::kNone) == colors_reachable.end()) {
+    // Cannot reach kNone from init_pos (using init_color).
+    // String has no liberties. Remove it.
+    for (Pos pos : string) {
+      SetPos(pos, Color::kNone);
+    }
+  }
+}
+
+// Is this empty Pos anyone's territory according to Tromp-Taylor?
+// string is populated with all empty Pos considered (to avoid re-computing).
+// If territory, record whose (color).
+bool Board::IsTerritory(const Pos& pos, PosSet* string, Color* color) const {
+  std::set<Color> colors_reachable;
+  FindReachable(pos, Color::kNone, string, &colors_reachable);
+  if (colors_reachable.size() == 1) {
+    // Only one of the two player's color was reachable from this empty spot.
+    *color = *colors_reachable.begin();
+    return true;
+  } else {
+    return false;
   }
 }
 
 int Board::Score() const {
-  // TODO
-  return 0;
+  int score = 0;
+  // Set of Pos visited out of order (so we don't re-compute).
+  PosSet visited;
+  for (int x = 0; x < width_; ++x) {
+    for (int y = 0; y < height_; ++y) {
+      Pos pos(x, y);
+      if (visited.find(pos) != visited.end()) {
+        // We already scored this pos.
+        continue;
+      }
+      switch (GetPos(pos)) {
+        case Color::kBlack: {
+          score += 1;
+          break;
+        }
+        case Color::kWhite: {
+          score -= 1;
+          break;
+        }
+        case Color::kNone: {
+          PosSet terr_poss;
+          Color color;
+          // Is this anyone's territory?
+          if (IsTerritory(pos, &terr_poss, &color)) {
+            // Score all of terr_poss.
+            if (color == Color::kBlack) {
+              score += terr_poss.size();
+            } else {
+              score -= terr_poss.size();
+            }
+          }
+          // Then make sure we don't re-compute region.
+          visited.insert(terr_poss.begin(), terr_poss.end());
+          break;
+        }
+      }
+    }
+  }
+  return score;
 }  
 
 

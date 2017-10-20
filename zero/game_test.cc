@@ -24,7 +24,10 @@ TEST(GameTest, Score) {
   EXPECT_TRUE(g.Play(Move(Move::kPass)));
 
   EXPECT_TRUE(g.IsGameOver());
-  EXPECT_EQ(1, g.score());
+  // Black has 2 stones + Pos(0, 0) as territory (3 points).
+  // White has 1 stone and no territory (1 point).
+  EXPECT_EQ(2, g.score());
+  EXPECT_EQ(Color::kBlack, g.winner());
 }
 
 TEST(GameTest, Capture) {

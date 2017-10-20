@@ -1,5 +1,6 @@
 // TODO: Add header guards.
 
+#include <set>
 #include <vector>
 
 namespace go_zero {
@@ -28,6 +29,15 @@ struct Pos {
   int y = 0;
 };
 
+struct PosComp {
+  bool operator() (const Pos& a, const Pos& b) const {
+    return std::pair<int, int>(a.x, a.y) < std::pair<int, int>(b.x, b.y);
+  }
+};
+
+typedef std::set<Pos, PosComp> PosSet;
+
+
 // Just the board vector. Caller must evaluate validity of board position.
 class Board {
  public:
@@ -53,6 +63,10 @@ class Board {
  private:
   bool IsOnBoard(const Pos& pos) const;
   std::vector<Pos> GetNeighbors(const Pos& pos) const;
+
+  void FindReachable(const Pos& pos, Color color,
+                     PosSet* string, std::set<Color>* colors_reachable) const;
+  bool IsTerritory(const Pos& pos, PosSet* string, Color* color) const;
 
   void TryLift(const Pos& init_pos, Color init_color);
 
