@@ -11,13 +11,13 @@ TEST(GameTest, Score) {
   EXPECT_FALSE(g.IsGameOver());
 
   // Black
-  EXPECT_TRUE(g.Play(Move(Move::kPlayStone, 0, 1)));
+  EXPECT_TRUE(g.Play(Move(Move::kPlayStone, Pos(0, 1))));
   // White
   EXPECT_TRUE(g.Play(Move(Move::kPass)));
   // Black
-  EXPECT_TRUE(g.Play({Move::kPlayStone, 1, 0}));
+  EXPECT_TRUE(g.Play(Move(Move::kPlayStone, Pos(1, 0))));
   // White
-  EXPECT_TRUE(g.Play({Move::kPlayStone, 4, 4}));
+  EXPECT_TRUE(g.Play(Move(Move::kPlayStone, Pos(4, 4))));
   // Black
   EXPECT_TRUE(g.Play(Move(Move::kPass)));
   // White

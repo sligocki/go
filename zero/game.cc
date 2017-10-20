@@ -1,3 +1,4 @@
+#include <set>
 #include <vector>
 
 #include "zero/game.h"
@@ -31,7 +32,7 @@ bool Game::TryPlay(const Move& move) {
       return true;
     }
     case Move::kPlayStone: {
-      if (PlayStone(move)) {
+      if (PlayStone(move.pos)) {
         // If move succeeded, reset pass counter.
         num_passes_ = 0;
         return true;
@@ -43,12 +44,12 @@ bool Game::TryPlay(const Move& move) {
   return false;
 }
 
-bool Game::PlayStone(const Move& move) {
-  if (!IsOnBoard(move)) {
+bool Game::PlayStone(const Pos& pos) {
+  if (!IsOnBoard(pos)) {
     // Outside of the board.
     return false;
   }
-  if (board_.GetPos(move.x, move.y) != Color::kNone) {
+  if (board_.GetPos(pos) != Color::kNone) {
     // Illegal to play on top of another stone.
     return false;
   }
@@ -57,15 +58,15 @@ bool Game::PlayStone(const Move& move) {
   num_passes_ = 0;
 
   // TODO: Should we be mutating the board directly?
-  board_.SetPos(move.x, move.y, curr_player_);
+  board_.SetPos(pos, curr_player_);
 
-  // See if this was a self-capture (we allow self-capture).
-  TryLift(move);
-
-  for (Move neighbor : GetNeighbors(move)) {
+  for (Pos neighbor : GetNeighbors(pos)) {
     // See if any neighboring groups were captured.
     TryLift(neighbor);
   }
+
+  // See if this was a self-capture (we allow self-capture).
+  TryLift(pos);
 
   // TODO: Check for KO?
 
@@ -73,7 +74,7 @@ bool Game::PlayStone(const Move& move) {
   return true;
 }
 
-bool Game::IsOnBoard(const Move& pos) const {
+bool Game::IsOnBoard(const Pos& pos) const {
   if (pos.x < 0 || pos.x >= board_.width() ||
       pos.y < 0 || pos.y >= board_.height()) {
     return false;
@@ -82,15 +83,16 @@ bool Game::IsOnBoard(const Move& pos) const {
   }
 }
 
-std::vector<Move> Game::GetNeighbors(const Move& pos) const {
+// Get all neighbors to pos that are on the board.
+std::vector<Pos> Game::GetNeighbors(const Pos& pos) const {
   // All possible neighbors.
-  std::vector<Move> poss_neighs;
-  poss_neighs.emplace_back(Move::kPlayStone, pos.x - 1, pos.y);
-  poss_neighs.emplace_back(Move::kPlayStone, pos.x + 1, pos.y);
-  poss_neighs.emplace_back(Move::kPlayStone, pos.x, pos.y - 1);
-  poss_neighs.emplace_back(Move::kPlayStone, pos.x, pos.y + 1);
-  std::vector<Move> neighbors;
-  for (const Move& poss_neigh : poss_neighs) {
+  std::vector<Pos> poss_neighs;
+  poss_neighs.emplace_back(pos.x - 1, pos.y);
+  poss_neighs.emplace_back(pos.x + 1, pos.y);
+  poss_neighs.emplace_back(pos.x, pos.y - 1);
+  poss_neighs.emplace_back(pos.x, pos.y + 1);
+  std::vector<Pos> neighbors;
+  for (const Pos& poss_neigh : poss_neighs) {
     if (IsOnBoard(poss_neigh)) {
       neighbors.push_back(poss_neigh);
     }
@@ -98,8 +100,62 @@ std::vector<Move> Game::GetNeighbors(const Move& pos) const {
   return neighbors;      
 }
 
-void Game::TryLift(const Move& pos) {
-  // TODO
+// Pop an element from std::set.
+template<typename T, typename Cmp>
+T Pop(std::set<T, Cmp>* ts) {
+  auto it = ts->begin();
+  T ret = *it;
+  ts->erase(it);
+  return ret;
+}
+
+struct PosComp {
+  bool operator() (const Pos& a, const Pos& b) const {
+    return std::pair<int, int>(a.x, a.y) < std::pair<int, int>(b.x, b.y);
+  }
+};
+
+typedef std::set<Pos, PosComp> PosSet;
+
+// Check to see if string of stones connected to pos should be removed from
+// the board and remove them if so.
+void Game::TryLift(const Pos& init_pos) {
+  Color init_color = board_.GetPos(init_pos);
+  if (init_color == Color::kNone) {
+    // Nothing to remove.
+    return;
+  }
+
+  // Flood fill algorithm.
+  PosSet to_visit;
+  to_visit.insert(init_pos);
+  PosSet visited;
+  PosSet this_string;
+  while (!to_visit.empty()) {
+    Pos pos = Pop(&to_visit);
+    if (visited.find(pos) != visited.end()) {
+      // Skip positions we've already considered.
+      continue;
+    }
+    visited.insert(pos);
+    Color this_color = board_.GetPos(pos);
+    if (this_color == Color::kNone) {
+      // There is at least one liberty.
+      return;
+    }
+
+    if (this_color == init_color) {
+      this_string.insert(pos);
+      for (Pos neighbor : GetNeighbors(pos)) {
+        to_visit.insert(neighbor);
+      }
+    }
+  }
+
+  // If we reached this point, string has no liberties. Remove it.
+  for (Pos pos : this_string) {
+    board_.SetPos(pos, Color::kNone);
+  }
 }
 
 void Game::ScoreBoard() {

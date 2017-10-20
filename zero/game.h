@@ -22,6 +22,12 @@ Color OppositeColor(Color color) {
   return Color::kNone;
 }
 
+struct Pos {
+  Pos(int x, int y) : x(x), y(y) {}
+  int x = 0;
+  int y = 0;
+};
+
 // Just the board vector. Caller must evaluate validity of board position.
 class Board {
  public:
@@ -30,12 +36,12 @@ class Board {
       board_(width, std::vector<Color>(height, Color::kNone)) {
   }
 
-  Color GetPos(int x, int y) const {
-    return board_[x][y];
+  Color GetPos(Pos p) const {
+    return board_[p.x][p.y];
   }
 
-  void SetPos(int x, int y, Color cont) {
-    board_[x][y] = cont;
+  void SetPos(Pos p, Color cont) {
+    board_[p.x][p.y] = cont;
   }
 
   int width() const { return width_; }
@@ -54,13 +60,11 @@ struct Move {
     kResign,
   };
 
-  explicit Move(Type type) : type(type) {}
-  Move(Type type, int x, int y) : type(type), x(x), y(y) {}
+  explicit Move(Type type) : type(type), pos(0, 0) {}
+  Move(Type type, Pos pos) : type(type), pos(pos) {}
 
   Type type = kPass;
-
-  int x = 0;
-  int y = 0;
+  Pos pos;
 };
 
 // Stores game state and 
@@ -81,12 +85,12 @@ class Game {
   void GetFeatures() const;
 
  private:
-  bool IsOnBoard(const Move& pos) const;
-  std::vector<Move> GetNeighbors(const Move& pos) const;
+  bool IsOnBoard(const Pos& pos) const;
+  std::vector<Pos> GetNeighbors(const Pos& pos) const;
 
   bool TryPlay(const Move& move);
-  bool PlayStone(const Move& move);
-  void TryLift(const Move& pos);
+  bool PlayStone(const Pos& pos);
+  void TryLift(const Pos& pos);
   void ScoreBoard();
 
   // White wins ties so -> komi = komi_ + 0.5
