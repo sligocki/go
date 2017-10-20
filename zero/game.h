@@ -54,6 +54,7 @@ struct Move {
     kResign,
   };
 
+  explicit Move(Type type) : type(type) {}
   Move(Type type, int x, int y) : type(type), x(x), y(y) {}
 
   Type type = kPass;
@@ -73,6 +74,8 @@ class Game {
   bool Play(const Move& move);
 
   bool IsGameOver() const { return winner_ != Color::kNone; }
+  Color winner() const { return winner_; }
+  int score() const { return score_; }
 
   // TODO: return input board state features used by Neural Network.
   void GetFeatures() const;
@@ -82,6 +85,7 @@ class Game {
   std::vector<Move> GetNeighbors(const Move& pos) const;
 
   bool TryPlay(const Move& move);
+  bool PlayStone(const Move& move);
   void TryLift(const Move& pos);
   void ScoreBoard();
 
@@ -94,6 +98,7 @@ class Game {
   // Number of sequential passes, when it reaches 2, game is over.
   int num_passes_ = 0;
   Color winner_ = Color::kNone;
+  int score_ = 0;
 
   int stones_played_ = 0;
 };

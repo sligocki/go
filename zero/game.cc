@@ -31,10 +31,19 @@ bool Game::TryPlay(const Move& move) {
       return true;
     }
     case Move::kPlayStone: {
-      break;  // Continued below.
+      if (PlayStone(move)) {
+        // If move succeeded, reset pass counter.
+        num_passes_ = 0;
+        return true;
+      } else {
+        return false;
+      }
     }
   }
+  return false;
+}
 
+bool Game::PlayStone(const Move& move) {
   if (!IsOnBoard(move)) {
     // Outside of the board.
     return false;
@@ -43,6 +52,9 @@ bool Game::TryPlay(const Move& move) {
     // Illegal to play on top of another stone.
     return false;
   }
+
+  // 
+  num_passes_ = 0;
 
   // TODO: Should we be mutating the board directly?
   board_.SetPos(move.x, move.y, curr_player_);
@@ -92,6 +104,10 @@ void Game::TryLift(const Move& pos) {
 
 void Game::ScoreBoard() {
   // TODO
+
+  // TODO
+  score_ = 0;
+  winner_ = Color::kBlack;
 }
 
 }  // namespace go_zero
