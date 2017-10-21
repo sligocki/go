@@ -8,6 +8,7 @@ namespace go_zero {
 
 bool Game::Play(const Move& move) {
   if (TryPlay(move)) {
+    ++moves_played_;
     // Switch players if move worked.
     curr_player_ = OppositeColor(curr_player_);
     return true;
@@ -28,14 +29,12 @@ bool Game::TryPlay(const Move& move) {
     case Move::kPass: {
       ++num_passes_;
       if (num_passes_ >= 2) {
-        score_ = board_.Score();
-        winner_ = (score_ - komi_ > 0 ? Color::kBlack : Color::kWhite);
+        winner_ = (EvaluateScore() > 0 ? Color::kBlack : Color::kWhite);
       }
       return true;
     }
     case Move::kPlayStone: {
       if (board_.PlayStone(move.pos, curr_player_)) {
-        ++stones_played_;
         // If move succeeded, reset pass counter.
         num_passes_ = 0;
         return true;

@@ -32,12 +32,20 @@ class Game {
   // Returns true if move is legal and was applied.
   bool Play(const Move& move);
 
-  bool IsGameOver() const { return winner_ != Color::kNone; }
-  Color winner() const { return winner_; }
-  int score() const { return score_; }
-
   // TODO: return input board state features used by Neural Network.
   void GetFeatures() const;
+
+  // Evaluate score according to Tromp-Taylor rules. Can be evaluated at any
+  // time, however it is not very meaningful until game is over.
+  // If positive, number of points Black won by +0.5 (+4 -> Black won by 3.5).
+  // If negative, number of points White won by -0.5 (-2 -> White won by 2.5).
+  int EvaluateScore() const { return board_.Score() - komi_; }
+
+  Color curr_player() const { return curr_player_; }
+  int moves_played() const { return moves_played_; }
+
+  bool IsGameOver() const { return winner_ != Color::kNone; }
+  Color winner() const { return winner_; }
 
  private:
   bool TryPlay(const Move& move);
@@ -47,13 +55,13 @@ class Game {
 
   Board board_;
   // TODO: Deal with KO and maybe store last N (8) boards.
+
   Color curr_player_ = Color::kBlack;
   // Number of sequential passes, when it reaches 2, game is over.
   int num_passes_ = 0;
-  Color winner_ = Color::kNone;
-  int score_ = 0;
+  int moves_played_ = 0;
 
-  int stones_played_ = 0;
+  Color winner_ = Color::kNone;
 };
 
 }  // namespace go_zero

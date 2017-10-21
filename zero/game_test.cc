@@ -26,11 +26,8 @@ TEST(GameTest, Score) {
   EXPECT_TRUE(g.IsGameOver());
   // Black has 2 stones + Pos(0, 0) as territory (3 points).
   // White has 1 stone and no territory (1 point).
-  EXPECT_EQ(2, g.score());
+  EXPECT_EQ(2, g.EvaluateScore());
   EXPECT_EQ(Color::kBlack, g.winner());
-}
-
-TEST(GameTest, Capture) {
 }
 
 }  // namespace go_zero
