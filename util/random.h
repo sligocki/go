@@ -1,15 +1,20 @@
+#include <inttypes.h>
 #include <random>
 
 class Random {
  public:
-  Random() : seed_(std::random_device()()), random_(seed_()) {}
+  Random() : seed_(std::random_device()()), random_engine_(seed_) {}
 
-  double UniformReal(int low, int high) {
-    std::uniform_real_distribution<> dist(low, high);
+  double UniformReal(double low, double high) {
+    std::uniform_real_distribution<double> dist(low, high);
     return dist(random_engine_);
   }
 
  private:
-  uint32 seed_;
+  uint32_t seed_;
   std::mt19937 random_engine_;
+
+  // Disallow Copy and Assign
+  Random(Random&) = delete;
+  void operator=(Random) = delete;
 };

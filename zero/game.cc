@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "zero/board.h"
+#include "zero/features.h"
 #include "zero/game.h"
 
 namespace go_zero {
@@ -44,6 +45,12 @@ bool Game::TryPlay(const Move& move) {
     }
   }
   return false;
+}
+
+void Game::GetFeatures(Features* features) const {
+  features->width = board_.width();
+  features->height = board_.height();
+  // TODO: Fill in rest.
 }
 
 }  // namespace go_zero

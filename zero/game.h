@@ -8,6 +8,8 @@
 
 namespace go_zero {
 
+class Features;
+
 struct Move {
   enum Type {
     kPlayStone,
@@ -32,8 +34,8 @@ class Game {
   // Returns true if move is legal and was applied.
   bool Play(const Move& move);
 
-  // TODO: return input board state features used by Neural Network.
-  void GetFeatures() const;
+  // Get input board state features used by Neural Network.
+  void GetFeatures(Features* features) const;
 
   // Evaluate score according to Tromp-Taylor rules. Can be evaluated at any
   // time, however it is not very meaningful until game is over.
@@ -46,6 +48,7 @@ class Game {
 
   bool IsGameOver() const { return winner_ != Color::kNone; }
   Color winner() const { return winner_; }
+  const Board& board() const { return board_; }
 
  private:
   bool TryPlay(const Move& move);
