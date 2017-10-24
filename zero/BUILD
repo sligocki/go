@@ -65,6 +65,7 @@ cc_library(name = "mcts",
            srcs = ["mcts.cc"],
            hdrs = ["mcts.h"],
            deps = [
+               ":board_io",
                ":features",
                ":game",
                ":grid",

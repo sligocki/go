@@ -29,6 +29,7 @@ class GameTree {
 
   int width() const { return state_.width(); }
   int height() const { return state_.height(); }
+  const MoveMap<int>& visits() const { return visits_; }
 
  private:
   // Fraction to reduce action_ each time we visit a position (ex: 0.9 means

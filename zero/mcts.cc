@@ -1,8 +1,10 @@
 #include "zero/mcts.h"
 
+#include <functional>
 #include <iostream>
 #include <memory>
 
+#include "zero/board_io.h"
 #include "zero/features.h"
 #include "zero/game.h"
 #include "zero/grid.h"
@@ -38,9 +40,49 @@ GameTree::GameTree(double decay, const Game& state, const Player& player,
   action_.Get(move) = evaluation_->policy().Get(move);
 }
 
+void ForAllMoves(int width, int height, std::function<void(const Move&)> func) {
+  for (int x = 0; x < width; ++x) {
+    for (int y = 0; y < height; ++y) {
+      Move move(Move::Type::kPlayStone, Pos(x, y));
+      func(move);
+    }
+  }
+  {
+    Move move(Move::Type::kPass);
+    func(move);
+  }
+  // TODO: Move Resign?
+}
+
+template <typename T>
+void ForAllMovesIn(const MoveMap<T>& map,
+                   std::function<void(const Move&, const T&)> func) {
+  ForAllMoves(map.width(), map.height(), [&map, &func](const Move& move) {
+      func(move, map.Get(move));
+    });
+}
+
 Move GameTree::RandomMove(Random* random) const {
-  // TODO
-  return Move(Move::Type::kPass);
+  double total_weight = 0.0;
+  ForAllMovesIn(action_,
+                [&total_weight](const Move& move, const double& weight) {
+      total_weight += weight;
+    });
+
+  double rand = random->UniformReal(0, total_weight);
+
+  Move rand_move(Move::Type::kPass);
+  // TODO: Is this biased?
+  ForAllMovesIn(action_,
+                [&rand, &rand_move](const Move& move,
+                                    const double& this_weight) {
+      if (rand >= 0.0 && rand < this_weight) {
+        rand_move = move;
+        // TODO: Early exit.
+      }
+      rand -= this_weight;
+    });
+  return rand_move;
 }
 
 void GameTree::AddVisit(Move move) {
@@ -90,20 +132,43 @@ void MCTS::MoveOnce() {
   // we think is best).
   int max_visits = -1;
   std::vector<Move> best_moves;
+  // TODO: for(Move move, int visits : current_node_.visits())
   for (int x = 0; x < current_node_->width(); ++x) {
     for (int y = 0; y < current_node_->height(); ++y) {
+      Move move(Move::Type::kPlayStone, Pos(x, y));
+      int visits = current_node_->visits().Get(move);
+      if (visits > max_visits) {
+        max_visits = visits;
+        best_moves.clear();
+        best_moves.push_back(move);
+      } else if (visits == max_visits) {
+        best_moves.push_back(move);
+      }
     }
   }
-  // TODO: Pass
+  {
+    Move move(Move::Type::kPass);
+    int visits = current_node_->visits().Get(move);
+    if (visits > max_visits) {
+      max_visits = visits;
+      best_moves.clear();
+      best_moves.push_back(move);
+    } else if (visits == max_visits) {
+      best_moves.push_back(move);
+    }
+  }
   std::cout << "max_visits = " << max_visits
             << " best_moves.size() = " << best_moves.size() << std::endl;
 
   // Pick a random best move.
   Move move = random_.Choose(best_moves);
-  //std::cout << " move = " << move << std::endl;
+  std::cout << " move = Move(type=" << (int)move.type
+            << ", x=" << move.pos.x << ", y=" << move.pos.y << ")" << std::endl;
 
   moves_.push_back(move);
   current_node_ = current_node_->child(move);
+
+  std::cout << BoardToString(current_node_->state().board());
 }
 
 void MCTS::SelfPlayGame() {
