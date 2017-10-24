@@ -1,6 +1,13 @@
+cc_library(name = "grid",
+           srcs = ["grid.h"],
+)
+
 cc_library(name = "board",
            srcs = ["board.cc"],
            hdrs = ["board.h"],
+           deps = [
+               ":grid",
+               ],
 )
 
 cc_library(name = "board_io",
@@ -60,6 +67,7 @@ cc_library(name = "mcts",
            deps = [
                ":features",
                ":game",
+               ":grid",
                ":player",
            ],
 )

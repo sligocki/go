@@ -32,8 +32,8 @@ bool Board::PlayStone(const Pos& pos, Color color) {
 }
 
 bool Board::IsOnBoard(const Pos& pos) const {
-  if (pos.x < 0 || pos.x >= width_ ||
-      pos.y < 0 || pos.y >= height_) {
+  if (pos.x < 0 || pos.x >= width() ||
+      pos.y < 0 || pos.y >= height()) {
     return false;
   } else {
     return true;
@@ -131,8 +131,8 @@ int Board::Score() const {
   int score = 0;
   // Set of Pos visited out of order (so we don't re-compute).
   PosSet visited;
-  for (int x = 0; x < width_; ++x) {
-    for (int y = 0; y < height_; ++y) {
+  for (int x = 0; x < width(); ++x) {
+    for (int y = 0; y < height(); ++y) {
       Pos pos(x, y);
       if (visited.find(pos) != visited.end()) {
         // We already scored this pos.

@@ -1,4 +1,10 @@
+#ifndef GO_ZERO_PLAYER_H
+#define GO_ZERO_PLAYER_H
+
+#include <memory>
 #include <vector>
+
+#include "zero/grid.h"
 
 class Random;
 
@@ -12,27 +18,27 @@ class Pos;
 class Player {
  public:
   virtual ~Player() {}
-  virtual void Evaluate(const Features& features,
-                        PlayerEvaluation* result) const = 0;
+  virtual std::unique_ptr<PlayerEvaluation> Evaluate(const Features& features)
+    const = 0;
 };
 
 class PlayerEvaluation {
  public:
-  double GetPolicy(int x, int y) const { return policy_[x][y]; }
-  double value() const { return value_; }
+  PlayerEvaluation(int width, int height)
+    : width_(width), height_(height), policy_(width, height, 0.0) {}
 
   Move RandomMove(Random* random) const;
 
-  // Used by Player to setup.
-  void SetWidth(int width) { width_ = width; }
-  void SetHeight(int height) { height_ = height; }
-  std::vector<std::vector<double>>* MutablePolicy() { return &policy_; }
-  void SetValue(double value) { value_ = value; }
+  double value() const { return value_; }
+  void set_value(double value) { value_ = value; }
+
+  const Grid<double>& policy() const { return policy_; }
+  Grid<double>* mutable_policy() { return &policy_; }
 
  private:
   int width_ = 0;
   int height_ = 0;
-  std::vector<std::vector<double>> policy_;
+  Grid<double> policy_;
   double value_ = 0.0;
 };
 
@@ -40,8 +46,10 @@ class PlayerEvaluation {
 // equally likely.
 class UniformPlayer : public Player {
  public:
-  void Evaluate(const Features& features,
-                PlayerEvaluation* result) const final;
+  std::unique_ptr<PlayerEvaluation> Evaluate(const Features& features)
+    const final;
 };
 
 }  // namespace go_zero
+
+#endif  // GO_ZERO_PLAYER_H

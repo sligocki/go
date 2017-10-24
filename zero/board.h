@@ -4,6 +4,8 @@
 #include <set>
 #include <vector>
 
+#include "zero/grid.h"
+
 namespace go_zero {
 
 enum class Color {
@@ -43,8 +45,7 @@ typedef std::set<Pos, PosComp> PosSet;
 class Board {
  public:
   Board(int width, int height)
-    : width_(width), height_(height),
-      board_(width, std::vector<Color>(height, Color::kNone)) {
+    : board_(width, height, Color::kNone) {
   }
 
   bool PlayStone(const Pos& pos, Color color);
@@ -54,15 +55,15 @@ class Board {
   int Score() const;
 
   Color GetPos(const Pos& p) const {
-    return board_[p.x][p.y];
+    return board_.Get(p.x, p.y);
   }
 
   void SetPos(const Pos& p, Color color) {
-    board_[p.x][p.y] = color;
+    board_.Set(p.x, p.y, color);
   }
 
-  int width() const { return width_; }
-  int height() const { return height_; }
+  int width() const { return board_.width(); }
+  int height() const { return board_.height(); }
 
  private:
   bool IsOnBoard(const Pos& pos) const;
@@ -74,9 +75,7 @@ class Board {
 
   void TryLift(const Pos& init_pos, Color init_color);
 
-  const int width_ = 0;
-  const int height_ = 0;
-  std::vector<std::vector<Color>> board_;
+  Grid<Color> board_;
 };
 
 }  // namespace go_zero

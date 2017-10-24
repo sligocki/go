@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "zero/features.h"
 #include "zero/game.h"
 #include "zero/player.h"
@@ -16,15 +18,14 @@ bool MCRollout(const Game& starting_position, const Player& player,
     game.GetFeatures(&features);
 
     // Evaluate this in the Neural Network.
-    PlayerEvaluation policy;
-    player.Evaluate(features, &policy);
+    std::unique_ptr<PlayerEvaluation> policy = player.Evaluate(features);
 
     // Keep trying to play moves until you play a legal one.
     // TODO: Will this cause problems? Maybe Pass if illegal move is chosen?
     bool successfully_moved = false;
     while (!successfully_moved) {
       // Randomly choose a move based on the policy.
-      Move move = policy.RandomMove(random);
+      Move move = policy->RandomMove(random);
       successfully_moved = game.Play(move);
     }
   }

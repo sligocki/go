@@ -48,7 +48,10 @@ class Game {
 
   bool IsGameOver() const { return winner_ != Color::kNone; }
   Color winner() const { return winner_; }
+
   const Board& board() const { return board_; }
+  int width() const { return board_.width(); }
+  int height() const { return board_.height(); }
 
  private:
   bool TryPlay(const Move& move);
