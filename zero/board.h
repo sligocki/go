@@ -12,7 +12,7 @@ enum class Color {
   kWhite,
 };
 
-Color OppositeColor(Color color) {
+inline Color OppositeColor(Color color) {
   switch (color) {
     case Color::kBlack:
       return Color::kWhite;
