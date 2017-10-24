@@ -23,7 +23,6 @@ inline Color OppositeColor(Color color) {
     case Color::kNone:
       return Color::kNone;
   }
-  return Color::kNone;
 }
 
 struct Pos {

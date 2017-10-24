@@ -9,7 +9,7 @@
 
 namespace go_zero {
 
-class Features;
+struct Features;
 
 struct Move {
   enum Type {

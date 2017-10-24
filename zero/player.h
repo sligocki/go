@@ -10,10 +10,10 @@ class Random;
 
 namespace go_zero {
 
-class Features;
-class Move;
+struct Features;
+struct Move;
 class PlayerEvaluation;
-class Pos;
+struct Pos;
 
 class Player {
  public:
