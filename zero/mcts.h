@@ -26,13 +26,15 @@ class MCTS {
  public:
   MCTS() {}
 
-  void SearchOnce() {
-    //GameTree* parent = nullptr;
-    GameTree* node = root_;
-    while (node != nullptr) {
-      // TODO.
-    }
-  }
+  // Search through GameTree til we reach first undefined node and add it
+  // (updating action scores).
+  void SearchOnce();
+
+  // Evaluate many searches and then make one move.
+  void MoveOnce();
+
+  // Repeatedly play moves in a game.
+  void PlayGame();
 
  private:
   // Number of Monte Carlo Tree Searches to perform before each move.
@@ -43,6 +45,8 @@ class MCTS {
   // Moves played from start to now.
   std::vector<Move> moves_;
 };
+
+// Legacy methods: ...
 
 // Runs single rollout and returns whether or not current player won.
 bool MCRollout(const Game& starting_position, const Player& player,
