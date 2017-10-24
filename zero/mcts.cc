@@ -47,9 +47,10 @@ void GameTree::AddVisit(Move move) {
   action_.Get(move) *= decay_;
 }
 
-MCTS::MCTS(int searches_per_move, double decay, const Game& initial_state,
-           const Player* player)
+MCTS::MCTS(int searches_per_move, int max_moves, double decay,
+           const Game& initial_state, const Player* player)
   : searches_per_move_(searches_per_move),
+    max_moves_(max_moves),
     decay_(decay),
     player_(player),
     root_(decay_, initial_state, *player_, nullptr),
@@ -99,6 +100,14 @@ void MCTS::MoveOnce() {
 
   moves_.push_back(move);
   current_node_ = current_node_->child(move);
+}
+
+void MCTS::SelfPlayGame() {
+  while (!current_node_->state().IsGameOver() &&
+         current_node_->state().moves_played() < max_moves_) {
+    MoveOnce();
+  }
+  // TODO: Return moves_ + winner?
 }
 
 // TODO: Remove Legacy methods

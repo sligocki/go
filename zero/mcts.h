@@ -47,8 +47,8 @@ class GameTree {
 
 class MCTS {
  public:
-  MCTS(int searches_per_move, double decay, const Game& initial_state,
-       const Player* player);
+  MCTS(int searches_per_move, int max_moves, double decay,
+       const Game& initial_state, const Player* player);
 
   // Search through GameTree til we reach first undefined node and add it
   // (updating action scores).
@@ -65,6 +65,8 @@ class MCTS {
  private:
   // Number of Monte Carlo Tree Searches to perform before each move.
   const int searches_per_move_ = 0;
+  // Max moves to play in a game before declaring it over.
+  const int max_moves_ = 0;
   const double decay_ = 0.0;
 
   const Player* player_ = nullptr;
