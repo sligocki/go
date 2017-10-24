@@ -9,7 +9,7 @@
 namespace go_zero {
 
 enum class Color {
-  kNone,
+  kNone = 0,  // Make sure this is default value.
   kBlack,
   kWhite,
 };
@@ -45,7 +45,7 @@ typedef std::set<Pos, PosComp> PosSet;
 class Board {
  public:
   Board(int width, int height)
-    : board_(width, height, Color::kNone) {
+    : board_(width, height) {
   }
 
   bool PlayStone(const Pos& pos, Color color);
@@ -59,7 +59,7 @@ class Board {
   }
 
   void SetPos(const Pos& p, Color color) {
-    board_.Set(p.x, p.y, color);
+    board_.Get(p.x, p.y) = color;
   }
 
   int width() const { return board_.width(); }

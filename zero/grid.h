@@ -10,15 +10,15 @@ namespace go_zero {
 template <typename T>
 class Grid {
  public:
-  Grid(int width, int height, T default_value)
+  Grid(int width, int height)
     : width_(width), height_(height) {
     for (int x = 0; x < width; ++x) {
-      data_.emplace_back(height, default_value);
+      data_.emplace_back(height);
     }
   }
 
-  T Get(int x, int y) const { return data_[x][y]; }
-  void Set(int x, int y, T value) { data_[x][y] = value; }
+  T& Get(int x, int y) { return data_[x][y]; }
+  const T& Get(int x, int y) const { return data_[x][y]; }
 
   int width() const { return width_; }
   int height() const { return height_; }

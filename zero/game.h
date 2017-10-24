@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "zero/board.h"
+#include "zero/grid.h"
 
 namespace go_zero {
 
@@ -22,6 +23,43 @@ struct Move {
 
   Type type = kPass;
   Pos pos;
+};
+
+template <typename T>
+class MoveMap {
+ public:
+  MoveMap(int width, int height)
+    : play_(width, height), pass_(T()), resign_(T()) {}
+
+  T& Get(const Move& move) {
+    switch (move.type) {
+      case Move::Type::kPlayStone:
+        return play_.Get(move.pos.x, move.pos.y);
+      case Move::Type::kPass:
+        return pass_;
+      case Move::Type::kResign:
+        return resign_;
+    }
+  }
+
+  const T& Get(const Move& move) const {
+    switch (move.type) {
+      case Move::Type::kPlayStone:
+        return play_.Get(move.pos.x, move.pos.y);
+      case Move::Type::kPass:
+        return pass_;
+      case Move::Type::kResign:
+        return resign_;
+    }
+  }
+
+  int width() const { return play_.width(); }
+  int height() const { return play_.height(); }
+
+ private:
+  Grid<T> play_;
+  T pass_;
+  T resign_;
 };
 
 // Stores game state and 

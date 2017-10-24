@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-#include "zero/grid.h"
+#include "zero/game.h"
 
 class Random;
 
@@ -25,20 +25,20 @@ class Player {
 class PlayerEvaluation {
  public:
   PlayerEvaluation(int width, int height)
-    : width_(width), height_(height), policy_(width, height, 0.0) {}
+    : width_(width), height_(height), policy_(width, height) {}
 
   Move RandomMove(Random* random) const;
 
   double value() const { return value_; }
   void set_value(double value) { value_ = value; }
 
-  const Grid<double>& policy() const { return policy_; }
-  Grid<double>* mutable_policy() { return &policy_; }
+  const MoveMap<double>& policy() const { return policy_; }
+  MoveMap<double>* mutable_policy() { return &policy_; }
 
  private:
   int width_ = 0;
   int height_ = 0;
-  Grid<double> policy_;
+  MoveMap<double> policy_;
   double value_ = 0.0;
 };
 

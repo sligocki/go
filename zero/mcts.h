@@ -3,28 +3,52 @@
 
 #include <memory>
 
-#include "zero/grid.h"
+#include "util/random.h"
 #include "zero/game.h"
 #include "zero/player.h"
 
-class Random;
-
 namespace go_zero {
 
-struct GameTree {
-  GameTree(const Game& state, std::unique_ptr<PlayerEvaluation> evaluation)
-    : state(state),
-    evaluation_(std::move(evaluation)),
-      children_(state.width(), state.height(), nullptr) {}
+class GameTree {
+ public:
+  GameTree(double decay, const Game& state, const Player& player,
+           const GameTree* parent);
 
-  Game state;
+  // Choose a random next move to explore based on action_ weights.
+  Move RandomMove(Random* random) const;
+
+  void AddVisit(Move move);
+
+  const Game& state() const { return state_; }
+  GameTree* child(Move move) {
+    return children_.Get(move).get();
+  }
+  void set_child(Move move, GameTree* child) {
+    children_.Get(move).reset(child);
+  }
+
+  int width() const { return state_.width(); }
+  int height() const { return state_.height(); }
+
+ private:
+  // Fraction to reduce action_ each time we visit a position (ex: 0.9 means
+  // we will be 90% as likely to visit this node again after first visit,
+  // 81% after second visit, etc.)
+  const double decay_ = 0.0;
+  Game state_;
   std::unique_ptr<PlayerEvaluation> evaluation_;
-  Grid<GameTree*> children_;
+  MoveMap<std::unique_ptr<GameTree>> children_;
+  // Number of times we've visited each child.
+  MoveMap<int> visits_;
+  // Action value for children.
+  MoveMap<double> action_;
+  const GameTree* parent_ = nullptr;
 };
 
 class MCTS {
  public:
-  MCTS() {}
+  MCTS(int searches_per_move, double decay, const Game& initial_state,
+       const Player* player);
 
   // Search through GameTree til we reach first undefined node and add it
   // (updating action scores).
@@ -34,16 +58,25 @@ class MCTS {
   void MoveOnce();
 
   // Repeatedly play moves in a game.
-  void PlayGame();
+  // Note: Both players share the same memory, so this is not a very
+  // competitive game.
+  void SelfPlayGame();
 
  private:
   // Number of Monte Carlo Tree Searches to perform before each move.
   const int searches_per_move_ = 0;
+  const double decay_ = 0.0;
 
-  // Current root of MCTS game tree (root is current position).
-  GameTree* root_ = nullptr;
+  const Player* player_ = nullptr;
+
+  // Root of MCTS game tree.
+  GameTree root_;
+  // Current node in game tree (current game position).
+  GameTree* current_node_ = nullptr;
   // Moves played from start to now.
   std::vector<Move> moves_;
+
+  Random random_;
 };
 
 // Legacy methods: ...
