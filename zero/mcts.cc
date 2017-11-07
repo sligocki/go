@@ -64,25 +64,31 @@ void ForAllMovesIn(const MoveMap<T>& map,
 
 Move GameTree::RandomMove(Random* random) const {
   double total_weight = 0.0;
-  ForAllMovesIn(action_,
-                [&total_weight](const Move& move, const double& weight) {
-      total_weight += weight;
-    });
+  for (int x = 0; x < action_.width(); ++x) {
+    for (int y = 0; y < action_.height(); ++y) {
+      Move move(Move::Type::kPlayStone, Pos(x, y));
+      total_weight += action_.Get(move);
+    }
+  }
+  {
+    Move move(Move::Type::kPass);
+    total_weight += action_.Get(move);
+  }
 
   double rand = random->UniformReal(0, total_weight);
 
-  Move rand_move(Move::Type::kPass);
   // TODO: Is this biased?
-  ForAllMovesIn(action_,
-                [&rand, &rand_move](const Move& move,
-                                    const double& this_weight) {
-      if (rand >= 0.0 && rand < this_weight) {
-        rand_move = move;
-        // TODO: Early exit.
+  for (int x = 0; x < action_.width(); ++x) {
+    for (int y = 0; y < action_.height(); ++y) {
+      Move move(Move::Type::kPlayStone, Pos(x, y));
+      double this_weight = action_.Get(move);
+      if (rand < this_weight) {
+        return move;
       }
       rand -= this_weight;
-    });
-  return rand_move;
+    }
+  }
+  return Move(Move::Type::kPass);
 }
 
 void GameTree::AddVisit(Move move) {
