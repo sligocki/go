@@ -1,6 +1,7 @@
 #ifndef GO_ZERO_MCTS_H
 #define GO_ZERO_MCTS_H
 
+#include <cassert>
 #include <memory>
 
 #include "util/random.h"
@@ -62,6 +63,11 @@ class MCTS {
   // Note: Both players share the same memory, so this is not a very
   // competitive game.
   void SelfPlayGame();
+
+  const Game& state() const {
+    assert(current_node_ != nullptr);
+    return current_node_->state();
+  }
 
  private:
   // Number of Monte Carlo Tree Searches to perform before each move.

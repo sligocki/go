@@ -2,6 +2,7 @@
 #define GO_ZERO_BOARD_H
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "zero/grid.h"
@@ -13,6 +14,17 @@ enum class Color {
   kBlack,
   kWhite,
 };
+
+inline std::string ColorToString(Color color) {
+  switch (color) {
+    case Color::kBlack:
+      return "Black";
+    case Color::kWhite:
+      return "White";
+    case Color::kNone:
+      return "None";
+  }
+}
 
 inline Color OppositeColor(Color color) {
   switch (color) {

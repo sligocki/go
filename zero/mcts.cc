@@ -1,5 +1,6 @@
 #include "zero/mcts.h"
 
+#include <cassert>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -38,28 +39,6 @@ GameTree::GameTree(double decay, const Game& state, const Player& player,
   Move move(Move::Type::kPass);
   // TODO: Make sure this is doing a data copy (not ref copy).
   action_.Get(move) = evaluation_->policy().Get(move);
-}
-
-void ForAllMoves(int width, int height, std::function<void(const Move&)> func) {
-  for (int x = 0; x < width; ++x) {
-    for (int y = 0; y < height; ++y) {
-      Move move(Move::Type::kPlayStone, Pos(x, y));
-      func(move);
-    }
-  }
-  {
-    Move move(Move::Type::kPass);
-    func(move);
-  }
-  // TODO: Move Resign?
-}
-
-template <typename T>
-void ForAllMovesIn(const MoveMap<T>& map,
-                   std::function<void(const Move&, const T&)> func) {
-  ForAllMoves(map.width(), map.height(), [&map, &func](const Move& move) {
-      func(move, map.Get(move));
-    });
 }
 
 Move GameTree::RandomMove(Random* random) const {
@@ -111,7 +90,6 @@ void MCTS::SearchOnce() {
   while (true) {
     // Choose a random move to explore.
     Move move = node->RandomMove(&random_);
-    node->AddVisit(move);
     if (node->child(move) == nullptr) {
       // Unexplored node. Evaluate it and finish.
       Game new_state(node->state());
@@ -124,6 +102,7 @@ void MCTS::SearchOnce() {
       }
       return;
     }
+    node->AddVisit(move);
     node = node->child(move);
   }
 }
@@ -173,6 +152,7 @@ void MCTS::MoveOnce() {
 
   moves_.push_back(move);
   current_node_ = current_node_->child(move);
+  assert(current_node_ != nullptr);
 
   std::cout << BoardToString(current_node_->state().board());
 }

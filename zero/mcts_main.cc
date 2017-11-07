@@ -26,6 +26,9 @@ void Main() {
   MCTS mcts(FLAGS_mcts_searches_per_move, max_moves, FLAGS_mcts_decay,
             game, &player);
   mcts.SelfPlayGame();
+
+  std::cout << "Result: Winner: " << ColorToString(mcts.state().winner())
+            << " Score: " << mcts.state().EvaluateScore() << std::endl;
 }
 
 }  // namespace go_zero
